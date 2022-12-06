@@ -100,7 +100,7 @@ def computerate():
     return sortedrateofchangedict
 
 
-commonkey = []
+commonkey = {}
 result = []
 for i in range(1,4):
     result.append(computerate())
@@ -109,9 +109,9 @@ for key1 in result[0]:
         if(key1[0] == key2[0]):
             for key3 in result[2]:
                 if(key3[0] == key2[0]):
-                    commonkey.append(key3)
+                    commonkey.update({key3[0]:key3[1]})
 print("Common stocks in 15 minutes are.. ")
-pprint(commonkey)
+pprint(sorted(commonkey.items(), key=lambda x:x[1], reverse=True))
 
 
 
