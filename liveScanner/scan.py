@@ -84,7 +84,7 @@ def computerate():
         rateofchangedict[key] = [round(((changedict[key]['rate2'][0]-changedict[key]['rate1'][0])/changedict[key]['rate1'][0])*100,2),changedict[key]['rate2'][1]]
 
     print("Sorted stocks by live rate of change within last 2 minutes..")
-    pprint(sorted(rateofchangedict.items(), key=lambda x:x[1], reverse=True))
+    pprint(sorted(rateofchangedict.items(), key=lambda x:x[0], reverse=True))
 
 
 #quotes = display_stock_codes()
