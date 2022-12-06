@@ -63,8 +63,8 @@ def computerate():
         gaindict[key] = changedict[key]['rate1']
     print("Sorted stocks by rate x totalvolume x deliverypercent till now..")
     pprint(sorted(gaindict.items(), key=lambda x:x[1], reverse=True))
-    print("Sleeping for 120 seconds..")
-    time.sleep(120)
+    print("Sleeping for 300 seconds..")
+    time.sleep(300)
     print("Computing change2..")
     for key in quotes:
         if changedict[key] == -1:
@@ -94,15 +94,24 @@ def computerate():
             continue
         else:
             rateofchangedict[key] = [rateofchange,changedict[key]['rate2'][1]]
-    print("Sorted stocks by live rate of change within last 2 minutes..")
-    pprint(sorted(rateofchangedict.items(), key=lambda x:x[1], reverse=True))
+    print("Sorted stocks by live rate of change within last 5 minutes..")
+    sortedrateofchangedict = sorted(rateofchangedict.items(), key=lambda x:x[1], reverse=True) 
+    pprint(sortedrateofchangedict)
+    return sortedrateofchangedict
 
 
-#quotes = display_stock_codes()
-#print(quotes['20MICRONS'])
-#q = nse.get_quote('infy')
-#pprint (q)
+commonkey = []
+result = []
+for i in range(1,4):
+    result.append(computerate())
+for key1 in result[0]:
+    for key2 in result[1]:
+        if(key1[0] == key2[0]):
+            for key3 in result[2]:
+                if(key3[0] == key2[0]):
+                    commonkey.append(key3)
+print("Common stocks in 15 minutes are.. ")
+pprint(commonkey)
 
-computerate()
 
 
