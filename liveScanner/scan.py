@@ -45,10 +45,14 @@ def computerate():
         except Exception:
             changedict[key] = -1
             continue
-        rate = float(result['pChange'])
-        totalvolume = float(result['totalTradedVolume'])
         if result['deliveryToTradedQuantity'] is None:
             result['deliveryToTradedQuantity'] = 1
+        elif result['pChange'] is None:
+            result['pChange'] = 1
+        elif result['totalTradedVolume'] is None:
+            result['totalTradedVolume']=1
+        rate = float(result['pChange'])
+        totalvolume = float(result['totalTradedVolume'])
         deliverypercent = float(result['deliveryToTradedQuantity'])
         if rate <= 0 or totalvolume < 100000:
             changedict[key] = -1
@@ -70,10 +74,14 @@ def computerate():
         except Exception:
             changedict[key] = -1
             continue
-        rate = float(result['pChange'])
-        totalvolume = float(result['totalTradedVolume'])
         if result['deliveryToTradedQuantity'] is None:
             result['deliveryToTradedQuantity'] = 1
+        elif result['pChange'] is None:
+            result['pChange'] = 1
+        elif result['totalTradedVolume'] is None:
+            result['totalTradedVolume']=1
+        rate = float(result['pChange'])
+        totalvolume = float(result['totalTradedVolume'])
         deliverypercent = float(result['deliveryToTradedQuantity'])
         changedict[key]['rate2'] = [rate * totalvolume * deliverypercent, deliverypercent]
         #print(key,changedict[key])
@@ -81,10 +89,13 @@ def computerate():
     for key in quotes:
         if changedict[key] == -1:
             continue
-        rateofchangedict[key] = [round(((changedict[key]['rate2'][0]-changedict[key]['rate1'][0])/changedict[key]['rate1'][0])*100,2),changedict[key]['rate2'][1]]
-
+        rateofchange = round(((changedict[key]['rate2'][0]-changedict[key]['rate1'][0])/changedict[key]['rate1'][0])*100,2)
+        if rateofchange < 0:
+            continue
+        else:
+            rateofchangedict[key] = [rateofchange,changedict[key]['rate2'][1]]
     print("Sorted stocks by live rate of change within last 2 minutes..")
-    pprint(sorted(rateofchangedict.items(), key=lambda x:x[0], reverse=True))
+    pprint(sorted(rateofchangedict.items(), key=lambda x:x[1], reverse=True))
 
 
 #quotes = display_stock_codes()
