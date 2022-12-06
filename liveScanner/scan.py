@@ -47,14 +47,17 @@ def computerate():
             continue
         rate = float(result['pChange'])
         totalvolume = float(result['totalTradedVolume'])
+        if result['deliveryToTradedQuantity'] is None:
+            result['deliveryToTradedQuantity'] = 1
+        deliverypercent = float(result['deliveryToTradedQuantity'])
         if rate <= 0 or totalvolume < 100000:
             changedict[key] = -1
             continue
         changedict[key] = {}
-        changedict[key]['rate1'] = rate
-        print(key,changedict[key])
+        changedict[key]['rate1'] = [rate * totalvolume * deliverypercent, deliverypercent]
+        #print(key,changedict[key])
         gaindict[key] = changedict[key]['rate1']
-    print("sorted stocks by gain percent till now..")
+    print("Sorted stocks by rate x totalvolume x deliverypercent till now..")
     pprint(sorted(gaindict.items(), key=lambda x:x[1], reverse=True))
     print("Sleeping for 120 seconds..")
     time.sleep(120)
@@ -67,15 +70,20 @@ def computerate():
         except Exception:
             changedict[key] = -1
             continue
-        changedict[key]['rate2'] = float((result['pChange']))
-        print(key,changedict[key])
+        rate = float(result['pChange'])
+        totalvolume = float(result['totalTradedVolume'])
+        if result['deliveryToTradedQuantity'] is None:
+            result['deliveryToTradedQuantity'] = 1
+        deliverypercent = float(result['deliveryToTradedQuantity'])
+        changedict[key]['rate2'] = [rate * totalvolume * deliverypercent, deliverypercent]
+        #print(key,changedict[key])
     print("Computing rate of change..")
     for key in quotes:
         if changedict[key] == -1:
             continue
-        rateofchangedict[key] = round(((changedict[key]['rate2']-changedict[key]['rate1'])/changedict[key]['rate1'])*100,2)
+        rateofchangedict[key] = [round(((changedict[key]['rate2'][0]-changedict[key]['rate1'][0])/changedict[key]['rate1'][0])*100,2),changedict[key]['rate2'][1]]
 
-    print("sorted stocks by live rate of change within 2 minutes..")
+    print("Sorted stocks by live rate of change within last 2 minutes..")
     pprint(sorted(rateofchangedict.items(), key=lambda x:x[1], reverse=True))
 
 
