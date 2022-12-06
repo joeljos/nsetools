@@ -61,8 +61,8 @@ def computerate():
         changedict[key]['rate1'] = [rate * totalvolume * deliverypercent, deliverypercent]
         #print(key,changedict[key])
         gaindict[key] = changedict[key]['rate1']
-    print("Sorted stocks by rate x totalvolume x deliverypercent till now..")
-    pprint(sorted(gaindict.items(), key=lambda x:x[1], reverse=True))
+    #print("Sorted stocks by rate x totalvolume x deliverypercent till now..")
+    #pprint(sorted(gaindict.items(), key=lambda x:x[1], reverse=True))
     print("Sleeping for 300 seconds..")
     time.sleep(300)
     print("Computing change2..")
