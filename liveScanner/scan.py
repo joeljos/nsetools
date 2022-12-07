@@ -45,12 +45,9 @@ def computerate():
         except Exception:
             changedict[key] = -1
             continue
-        if result['deliveryToTradedQuantity'] is None:
-            result['deliveryToTradedQuantity'] = 1
-        elif result['pChange'] is None:
-            result['pChange'] = 1
-        elif result['totalTradedVolume'] is None:
-            result['totalTradedVolume']=1
+        if result['deliveryToTradedQuantity'] is None or result['deliveryToTradedQuantity'] < 45 or result['pChange'] is None or result['totalTradedVolume'] is None:
+            changedict[key] = -1
+            continue
         rate = float(result['pChange'])
         totalvolume = float(result['totalTradedVolume'])
         deliverypercent = float(result['deliveryToTradedQuantity'])
@@ -74,12 +71,9 @@ def computerate():
         except Exception:
             changedict[key] = -1
             continue
-        if result['deliveryToTradedQuantity'] is None:
-            result['deliveryToTradedQuantity'] = 1
-        elif result['pChange'] is None:
-            result['pChange'] = 1
-        elif result['totalTradedVolume'] is None:
-            result['totalTradedVolume']=1
+        if result['deliveryToTradedQuantity'] is None or result['deliveryToTradedQuantity'] < 45 or result['pChange'] is None or result['totalTradedVolume'] is None:
+            changedict[key] = -1
+            continue
         rate = float(result['pChange'])
         totalvolume = float(result['totalTradedVolume'])
         deliverypercent = float(result['deliveryToTradedQuantity'])
@@ -98,7 +92,6 @@ def computerate():
     sortedrateofchangedict = sorted(rateofchangedict.items(), key=lambda x:x[1], reverse=True) 
     pprint(sortedrateofchangedict)
     return sortedrateofchangedict
-
 
 commonkey = {}
 result = []
