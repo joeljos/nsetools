@@ -13,13 +13,13 @@ def calculate_stochastic_oscillator(df, lookback=14):
         df['H14'] = df['HIGH'].rolling(window=lookback).max()
         df['%K'] = 100*((df['CLOSE'] - df['L14']) / (df['H14'] - df['L14']))
         df['%D'] = df['%K'].rolling(window=3).mean()  # Calculate %D as 3-period moving average of %K
-        df['%K_%D_diff'] = df['%K'] - df['%D']  # Calculate the difference between %K and %D
+        df['%K_%D_diff'] = ((df['%K'] - df['%D'])/(df['%K']))*100  # Calculate the difference between %K and %D
         df = df.dropna()  # Drop rows with NaN values
     return df[::-1]
 
 
 def calculate_uptrend(df):
-    df_uptrend = df[df['%K_%D_diff'] >= 0]  # Only keep rows where %K_%D_diff is greater than or equal to 15
+    df_uptrend = df[(df['%K_%D_diff'] > 10) & (df['%D'] > 50)]  # Only keep rows where %K_%D_diff is greater than or equal to 50%
     return df_uptrend
 
 directory = "."
@@ -28,7 +28,7 @@ files = glob.glob('*EQ.csv')
 uptrend_data = []
 
 # Please replace 'YYYY-MM-DD' with the current date in the same format
-current_date = '2024-02-16'
+current_date = '2024-02-01'
 lookback = 7
 start_date = (pd.to_datetime(current_date) - timedelta(days=(lookback+30))).strftime('%Y-%m-%d')
 

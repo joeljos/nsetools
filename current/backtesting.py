@@ -77,18 +77,17 @@ for index, row in final_df.iterrows():
                  pl_percent = round(((( stop_loss_price - purchase_price)/stop_loss_price)*100),1)
                  print(symbol, purchase_date.strftime('%Y-%m-%d'), r['DATE'].strftime('%Y-%m-%d'), stop_loss_price, pl_percent,"trailing stop loss")
                  ongoing.append((symbol, purchase_date.strftime('%Y-%m-%d'), r['DATE'].strftime('%Y-%m-%d'), stop_loss_price, pl_percent,"trailing stop loss"))
-                 if((pl_percent < 1 and pl_percent > 0) or (r['DATE'] > purchase_date + pd.Timedelta(days=max_days))):
-                     if(r['DATE'] > purchase_date + pd.Timedelta(days=7)):
-                        pl_percent = round(((( stop_loss_price - purchase_price)/stop_loss_price)*100),1)
-                        sell_date = pd.to_datetime(r['DATE'])  # Convert to datetime here
-                        #print("**",symbol,pl_percent,sell_date,purchase_date)
-                        profit_loss.append((symbol, purchase_date, sell_date, pl_percent))
-                        print(symbol, purchase_date.strftime('%Y-%m-%d'), sell_date.strftime('%Y-%m-%d'), pl_percent,"time exceeded")
-                        pl_total = pl_total + pl_percent
-                        pl_avg = pl_total/stock_count
-                        break
-                 #print(symbol,r['CLOSE'],stop_loss_price,purchase_price)
-
+                 if((pl_percent < 1) or (r['DATE'] > purchase_date + pd.Timedelta(days=max_days))):
+                     #if(r['DATE'] > purchase_date + pd.Timedelta(days=7)):
+                    pl_percent = round(((( r['CLOSE'] - purchase_price)/r['CLOSE'])*100),1)
+                    sell_date = pd.to_datetime(r['DATE'])  # Convert to datetime here
+                    #print("**",symbol,pl_percent,sell_date,purchase_date)
+                    profit_loss.append((symbol, purchase_date, sell_date, pl_percent))
+                    print(symbol, purchase_date.strftime('%Y-%m-%d'), sell_date.strftime('%Y-%m-%d'), pl_percent,"time exceeded")
+                    pl_total = pl_total + pl_percent
+                    pl_avg = pl_total/stock_count
+                    break
+                #print(symbol,r['CLOSE'],stop_loss_price,purchase_price)
             else:
                 print("Data not sufficient.. wait for the next data refresh..")
                 """                 
