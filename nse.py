@@ -56,7 +56,8 @@ class Nse(AbstractBaseExchange):
         self.opener = self.nse_opener()
         self.headers = self.nse_headers()
         # URL list
-        self.get_quote_url = 'https://www1.nseindia.com/live_market/dynaContent/live_watch/get_quote/GetQuote.jsp?'
+        #self.get_quote_url_old = 'https://www1.nseindia.com/live_market/dynaContent/live_watch/get_quote/GetQuote.jsp?'
+        self.get_quote_url = 'https://www.nseindia.com/get-quotes/equity?'
         self.stocks_csv_url = 'http://www1.nseindia.com/content/equities/EQUITY_L.csv'
         self.top_gainer_url = 'http://www1.nseindia.com/live_market/dynaContent/live_analysis/gainers/niftyGainers1.json'
         self.top_loser_url = 'http://www1.nseindia.com/live_market/dynaContent/live_analysis/losers/niftyLosers1.json'

@@ -42,6 +42,7 @@ def computerate():
     for key in quotes:
         try:
             result = nse.get_quote(key)
+            pprint(result)
         except Exception:
             changedict[key] = -1
             continue
@@ -56,10 +57,10 @@ def computerate():
             continue
         changedict[key] = {}
         changedict[key]['rate1'] = [rate * totalvolume * deliverypercent, deliverypercent]
-        #print(key,changedict[key])
+        print(key,changedict[key])
         gaindict[key] = changedict[key]['rate1']
-    #print("Sorted stocks by rate x totalvolume x deliverypercent till now..")
-    #pprint(sorted(gaindict.items(), key=lambda x:x[1], reverse=True))
+    print("Sorted stocks by rate x totalvolume x deliverypercent till now..")
+    pprint(sorted(gaindict.items(), key=lambda x:x[1], reverse=True))
     print("Sleeping for 300 seconds..")
     time.sleep(300)
     print("Computing change2..")
@@ -78,7 +79,7 @@ def computerate():
         totalvolume = float(result['totalTradedVolume'])
         deliverypercent = float(result['deliveryToTradedQuantity'])
         changedict[key]['rate2'] = [rate * totalvolume * deliverypercent, deliverypercent]
-        #print(key,changedict[key])
+        print(key,changedict[key])
     print("Computing rate of change..")
     for key in quotes:
         if changedict[key] == -1:
