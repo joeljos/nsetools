@@ -7,6 +7,10 @@ files = glob.glob('*EQ.csv')
 # Initialize a list to store all the dataframes
 dfs = []
 
+def round_to_nearest_05(n):
+    return round(round(n / 0.05) * 0.05,2)
+
+print("\n\nlogs : \n\n")
 # Loop through the files and read each one into a DataFrame
 for file in files:
     df = pd.read_csv(file)
@@ -21,8 +25,8 @@ historical_data = pd.concat(dfs)
 historical_data.reset_index(drop=True, inplace=True)
 #print(historical_data)
 
-# Read the final_df from 'final_output.csv'
-final_df = pd.read_csv('final_output.csv')
+# Read from 'portfolio.csv'
+final_df = pd.read_csv('portfolio.csv')
 # Make sure 'DATE' columns are in the correct format
 final_df['DATE'] = pd.to_datetime(final_df['DATE'])
 #print(final_df)
@@ -48,7 +52,7 @@ for index, row in final_df.iterrows():
         continue
     purchase_date = pd.to_datetime(row['DATE'])  # Convert to datetime here
     purchase_price = row['CLOSE']
-    stop_loss_price = round(purchase_price * 0.98,2)
+    stop_loss_price = round_to_nearest_05(round(purchase_price * 0.98,2))
 
     # Get the data for the next weeks
     next_week_data = historical_data[(historical_data['SYMBOL'] == symbol) & 
@@ -64,14 +68,14 @@ for index, row in final_df.iterrows():
                 pl_percent = round(((( stop_loss_price - purchase_price)/stop_loss_price)*100),1)
                 sell_date = pd.to_datetime(r['DATE'])  # Convert to datetime here
                 profit_loss.append((symbol, purchase_date, sell_date, pl_percent))
-                print((symbol, purchase_date.strftime('%Y-%m-%d'), sell_date.strftime('%Y-%m-%d'), pl_percent),"stop loss trigger")
+                print(symbol, purchase_date.strftime('%Y-%m-%d'), sell_date.strftime('%Y-%m-%d'), pl_percent,"stop loss trigger")
                 pl_total = pl_total + pl_percent
                 pl_avg = pl_total/stock_count
                 break
             elif(r['CLOSE'] > stop_loss_price):
-                 stop_loss_price = round(r['CLOSE'] * 0.98,2)
+                 stop_loss_price = round_to_nearest_05(round(r['CLOSE'] * 0.98,2))
                  pl_percent = round(((( stop_loss_price - purchase_price)/stop_loss_price)*100),1)
-                 print((symbol, purchase_date.strftime('%Y-%m-%d'), r['DATE'].strftime('%Y-%m-%d'), stop_loss_price, pl_percent),"trailing stop loss")
+                 print(symbol, purchase_date.strftime('%Y-%m-%d'), r['DATE'].strftime('%Y-%m-%d'), stop_loss_price, pl_percent,"trailing stop loss")
                  ongoing.append((symbol, purchase_date.strftime('%Y-%m-%d'), r['DATE'].strftime('%Y-%m-%d'), stop_loss_price, pl_percent,"trailing stop loss"))
                  if((pl_percent < 1 and pl_percent > 0) or (r['DATE'] > purchase_date + pd.Timedelta(days=max_days))):
                      if(r['DATE'] > purchase_date + pd.Timedelta(days=7)):
@@ -79,7 +83,7 @@ for index, row in final_df.iterrows():
                         sell_date = pd.to_datetime(r['DATE'])  # Convert to datetime here
                         #print("**",symbol,pl_percent,sell_date,purchase_date)
                         profit_loss.append((symbol, purchase_date, sell_date, pl_percent))
-                        print((symbol, purchase_date.strftime('%Y-%m-%d'), sell_date.strftime('%Y-%m-%d'), pl_percent),"time exceeded")
+                        print(symbol, purchase_date.strftime('%Y-%m-%d'), sell_date.strftime('%Y-%m-%d'), pl_percent,"time exceeded")
                         pl_total = pl_total + pl_percent
                         pl_avg = pl_total/stock_count
                         break
@@ -124,7 +128,7 @@ for symbol, date, s_date, p_l in profit_loss:
 
 # Calculate the total profit/loss
 total_profit_loss = sum(p_l for _, _, _, p_l in profit_loss)
-print(f"\nTotal completed profit/loss: {round(total_profit_loss/stock_count,2)}%")
+print(f"\nTotal completed profit/loss: {round(total_profit_loss/stock_count,2)}%\n")
 #print(stock_count)
 
 
