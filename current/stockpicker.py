@@ -19,7 +19,7 @@ def calculate_stochastic_oscillator(df, lookback=14):
 
 
 def calculate_uptrend(df):
-    df_uptrend = df[(df['%K_%D_diff'] > 10) & (df['%D'] > 50)]  # Only keep rows where %K_%D_diff is greater than or equal to 50%
+    df_uptrend = df[(df['%K_%D_diff'] > 10) & (df['%D'] > 15)]  # Only keep rows where %K_%D_diff is greater than or equal to 50%
     return df_uptrend
 
 directory = "."
@@ -28,8 +28,8 @@ files = glob.glob('*EQ.csv')
 uptrend_data = []
 
 # Please replace 'YYYY-MM-DD' with the current date in the same format
-current_date = '2024-02-01'
-lookback = 7
+current_date = '2023-02-1'
+lookback = 30
 start_date = (pd.to_datetime(current_date) - timedelta(days=(lookback+30))).strftime('%Y-%m-%d')
 
 for file in files:
