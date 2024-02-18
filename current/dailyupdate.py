@@ -12,13 +12,13 @@ import pandas as pd
 #q1 = n.stock_quote("HDFCBANK")
 #print(q['priceInfo'])
 
-symbols = ["HDFCBANK", "RELIANCE", "ICICIBANK","INFY", "LT", "ITC", "TCS", "AXISBANK", "BHARTIARTL", "KOTAKBANK"]
+#symbols = ["HDFCBANK", "RELIANCE", "ICICIBANK","INFY", "LT", "ITC", "TCS", "AXISBANK", "BHARTIARTL", "KOTAKBANK"]
 
 # Read the CSV file
-#df = pd.read_csv('ind_nifty50list.csv')
+df = pd.read_csv('ind_nifty50list.csv')
 
 # Extract the 'Symbol' column into a list
-#symbols = df['Symbol'].tolist()
+symbols = df['Symbol'].tolist()
 
 # Now 'symbols' is a list containing all the symbols
 

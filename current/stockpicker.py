@@ -19,7 +19,17 @@ def calculate_stochastic_oscillator(df, lookback=14):
 
 
 def calculate_uptrend(df):
-    df_uptrend = df[(df['%K_%D_diff'] > 10) & (df['%D'] > 15)]  # Only keep rows where %K_%D_diff is greater than or equal to 50%
+    
+   # df_uptrend = df[(df['%K_%D_diff'] > 0) & (df['%K_%D_diff'] < 5) & (df['%D'] > 15)]  
+    # Calculate the 200-day moving average
+    df['MA'] = df['CLOSE'].rolling(window=10).mean()
+
+    # Adjust the formula
+    df_uptrend = df[
+        (df['%K_%D_diff'] > 0) &
+        (df['CLOSE'] > df['MA']) # Price is above the 30-day moving average
+]
+
     return df_uptrend
 
 directory = "."
@@ -28,8 +38,8 @@ files = glob.glob('*EQ.csv')
 uptrend_data = []
 
 # Please replace 'YYYY-MM-DD' with the current date in the same format
-current_date = '2023-02-1'
-lookback = 30
+current_date = '2021-04-1'
+lookback = 14
 start_date = (pd.to_datetime(current_date) - timedelta(days=(lookback+30))).strftime('%Y-%m-%d')
 
 for file in files:

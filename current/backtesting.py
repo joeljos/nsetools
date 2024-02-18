@@ -40,6 +40,7 @@ stock_count = 0
 max_days = 700
 rprev = 0
 symbollist=[]
+pl_percent = 0
 
 for index, row in final_df.iterrows():
     if(pl_avg<=-4):
@@ -65,26 +66,28 @@ for index, row in final_df.iterrows():
         # Check if the closing price falls below the stop loss price
         for i, r in next_week_data.iterrows():
             #print(r['SYMBOL'], r["DATE"])
+            pl_percent = round(((( stop_loss_price - purchase_price)/stop_loss_price)*100),1)
             if ((r['CLOSE'] <= stop_loss_price) and (pl_percent > 0)): #or (r['CLOSE'] < rprev)
                 pl_percent = round(((( stop_loss_price - purchase_price)/stop_loss_price)*100),1)
                 sell_date = pd.to_datetime(r['DATE'])  # Convert to datetime here
-                profit_loss.append((symbol, purchase_date, sell_date, pl_percent))
+                profit_loss.append((symbol, purchase_date, sell_date, pl_percent, sell_date - purchase_date ))
                 print(symbol, purchase_date.strftime('%Y-%m-%d'), sell_date.strftime('%Y-%m-%d'), pl_percent,"stop loss trigger")
                 pl_total = pl_total + pl_percent
                 pl_avg = pl_total/stock_count
                #symbollist.remove(symbol)
                 break
-            elif((r['CLOSE'] > stop_loss_price) or (pl_percent <= 0)):
+            elif((r['CLOSE'] > stop_loss_price) or (pl_percent < 0)):
                  stop_loss_price = round_to_nearest_05(round(r['CLOSE'] * 0.98,2))
                  pl_percent = round(((( stop_loss_price - purchase_price)/stop_loss_price)*100),1)
                  print(symbol, purchase_date.strftime('%Y-%m-%d'), r['DATE'].strftime('%Y-%m-%d'), stop_loss_price, pl_percent,"trailing stop loss")
                  ongoing.append((symbol, purchase_date.strftime('%Y-%m-%d'), r['DATE'].strftime('%Y-%m-%d'), stop_loss_price, pl_percent,"trailing stop loss"))
-                 if((pl_percent > 0) and (r['DATE'] > purchase_date + pd.Timedelta(days=30))):
+                 pl_percent = round(((( r['CLOSE'] - purchase_price)/r['CLOSE'])*100),1)
+                 if((pl_percent >= 1) and (r['DATE'] > purchase_date + pd.Timedelta(days=60))): #or (pl_percent > -5 and pl_percent < -1) and (r['DATE'] > purchase_date + pd.Timedelta(days=30)))
                      #if(r['DATE'] > purchase_date + pd.Timedelta(days=7)):
                     pl_percent = round(((( r['CLOSE'] - purchase_price)/r['CLOSE'])*100),1)
                     sell_date = pd.to_datetime(r['DATE'])  # Convert to datetime here
                     #print("**",symbol,pl_percent,sell_date,purchase_date)
-                    profit_loss.append((symbol, purchase_date, sell_date, pl_percent))
+                    profit_loss.append((symbol, purchase_date, sell_date, pl_percent, sell_date - purchase_date ))
                     print(symbol, purchase_date.strftime('%Y-%m-%d'), sell_date.strftime('%Y-%m-%d'), pl_percent,"time exceeded")
                     pl_total = pl_total + pl_percent
                     pl_avg = pl_total/stock_count
@@ -125,12 +128,15 @@ profit_loss.sort(key=lambda x: x[1])
 #print(profit_loss)
 
 # Print the sorted profit/loss for each symbol
-for symbol, date, s_date, p_l in profit_loss:
-    print(f"{symbol}: {date.strftime('%Y-%m-%d')},{s_date.strftime('%Y-%m-%d')},{round(p_l,2)}%")
+for symbol, date, s_date, p_l, period in profit_loss:
+    print(f"{symbol}: {date.strftime('%Y-%m-%d')},{s_date.strftime('%Y-%m-%d')}, {round(p_l,2)}%,", period.days,"days")
 
 # Calculate the total profit/loss
-total_profit_loss = sum(p_l for _, _, _, p_l in profit_loss)
-print(f"\nTotal completed profit/loss: {round(total_profit_loss/stock_count,2)}%\n")
+total_profit_loss = sum(p_l for _, _, _, p_l, period in profit_loss)/stock_count
+print(f"\nTotal completed profit/loss: {round(total_profit_loss,2)}%\n")
+average_period = sum(period.days for _, _, _, p_l, period in profit_loss)/stock_count
+print(f"Average period taken : {round(average_period,0)} days\n")
+
 #print(total_profit_loss,stock_count)
 
 
