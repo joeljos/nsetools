@@ -1,5 +1,6 @@
 import pandas as pd
 import glob
+import subprocess
 
 # Get a list of all CSV files that end with 'EQ.csv'
 files = glob.glob('*EQ.csv')
@@ -10,7 +11,10 @@ dfs = []
 def round_to_nearest_05(n):
     return round(round(n / 0.05) * 0.05,2)
 
-print("\n\nlogs : \n\n")
+#print("\n\nlogs : \n\n")
+with open('output', 'a') as f:
+    # Execute the command and redirect the output to the file
+    subprocess.call(['echo', "\n\nlogs : \n\n"], stdout=f)
 # Loop through the files and read each one into a DataFrame
 for file in files:
     df = pd.read_csv(file)
@@ -37,7 +41,7 @@ ongoing = []
 pl_total = 0
 pl_avg = 0
 stock_count = 0
-max_days = 365
+max_days = 500
 rprev = 0
 symbolselllist={}
 symbolongoinglist=[]
@@ -52,7 +56,7 @@ for index, row in final_df.iterrows():
     if(symbol not in symbolongoinglist):
         symbolongoinglist.append(symbol)
     else:
-        print("Skipping symbol due to being present in ongoing..",symbol)
+        #print("Skipping symbol due to being present in ongoing..",symbol)
         continue
     purchase_date = pd.to_datetime(row['DATE'])  # Convert to datetime here
     if(symbol in symbolselllist.keys()):
@@ -61,7 +65,10 @@ for index, row in final_df.iterrows():
                 skipflag = True
                 break
     if(skipflag):
-        print("Skipping symbol as it has been purchased already..",symbol,purchase_date)
+        #print("Skipping symbol as it has been purchased already..",symbol,purchase_date)
+        with open('output', 'a') as f:
+    # Execute the command and redirect the output to the file
+            subprocess.call(['echo', "Skipping symbol as it has been purchased already..",symbol,purchase_date.strftime('%Y-%m-%d')], stdout=f)
         continue
     purchase_price = row['CLOSE']
     stop_loss_price = round_to_nearest_05(round(purchase_price * 0.95,2))
@@ -87,7 +94,10 @@ for index, row in final_df.iterrows():
                 else :
                     symbolselllist[symbol] = [sell_date]
                 symbolongoinglist.remove(symbol)
-                print(symbol, purchase_date.strftime('%Y-%m-%d'), sell_date.strftime('%Y-%m-%d'), pl_percent,"stop loss trigger")
+                #print(symbol, purchase_date.strftime('%Y-%m-%d'), sell_date.strftime('%Y-%m-%d'), pl_percent,"stop loss trigger")
+                with open('output', 'a') as f:
+                # Execute the command and redirect the output to the file
+                    subprocess.call(['echo', symbol, purchase_date.strftime('%Y-%m-%d'), sell_date.strftime('%Y-%m-%d'), str(pl_percent), "stop loss trigger"], stdout=f)
                 stock_count = stock_count + 1
                 pl_total = pl_total + pl_percent
                 pl_avg = pl_total/stock_count
@@ -95,12 +105,15 @@ for index, row in final_df.iterrows():
                 break
             else:
             #elif((r['CLOSE'] > stop_loss_price) or (pl_percent < 0)):
-                 if(pl_percent >= 5):
-                     stop_loss_price = round_to_nearest_05(round(r['CLOSE'] * 0.99,2))
+                 if(pl_percent >= 20):
+                     stop_loss_price = round_to_nearest_05(round(r['CLOSE'] * 0.98,2))
                  else:
                     stop_loss_price = round_to_nearest_05(round(r['CLOSE'] * 0.95,2))
                  pl_percent = round(((( stop_loss_price - purchase_price)/stop_loss_price)*100),1)
-                 print(symbol, purchase_date.strftime('%Y-%m-%d'), r['DATE'].strftime('%Y-%m-%d'), stop_loss_price, pl_percent,"trailing stop loss")
+                 #print(symbol, purchase_date.strftime('%Y-%m-%d'), r['DATE'].strftime('%Y-%m-%d'), stop_loss_price, pl_percent,"trailing stop loss")
+                 with open('output', 'a') as f:
+                # Execute the command and redirect the output to the file
+                    subprocess.call(['echo', symbol, purchase_date.strftime('%Y-%m-%d'), r['DATE'].strftime('%Y-%m-%d'), str(stop_loss_price), str(pl_percent),"trailing stop loss"], stdout=f)
                  ongoing.append((symbol, purchase_date.strftime('%Y-%m-%d'), r['DATE'].strftime('%Y-%m-%d'), stop_loss_price, pl_percent,"trailing stop loss"))
                  #pl_percent = round(((( r['CLOSE'] - purchase_price)/r['CLOSE'])*100),1)
                  """ if((pl_percent >= 1) and (r['DATE'] > purchase_date + pd.Timedelta(days=60))): #or (pl_percent > -5 and pl_percent < -1) and (r['DATE'] > purchase_date + pd.Timedelta(days=30)))
@@ -132,17 +145,26 @@ for index, row in final_df.iterrows():
 
 
 
-print("\n\nOngoing : \n\n")
+#print("\n\nOngoing : \n\n")
+with open('output', 'a') as f:
+                # Execute the command and redirect the output to the file
+    subprocess.call(['echo', "\n\nOngoing : \n\n"], stdout=f)
 # Extract symbols from profit_loss list
 pl_symbols = {lst[0] for lst in profit_loss}
 # Filter lists in ongoing where the symbol does not exist in profit_loss
 filtered_ongoing = [lst for lst in ongoing if lst[0] not in pl_symbols]
 # Print the filtered lists
 for lst in filtered_ongoing:
-    print(lst)
+    with open('output', 'a') as f:
+                # Execute the command and redirect the output to the file
+        subprocess.call(['echo', str(lst)], stdout=f)
 
 
 print("\n\nExits : \n\n")
+with open('output', 'a') as f:
+                # Execute the command and redirect the output to the file
+    subprocess.call(['echo', "\n\nExits : \n\n"], stdout=f)
+
 
 # Sort the profit/loss list by date
 profit_loss.sort(key=lambda x: x[1])
@@ -151,15 +173,28 @@ profit_loss.sort(key=lambda x: x[1])
 # Print the sorted profit/loss for each symbol
 for symbol, date, s_date, p_l, period in profit_loss:
     print(f"{symbol}: {date.strftime('%Y-%m-%d')},{s_date.strftime('%Y-%m-%d')}, {round(p_l,2)}%,", period.days,"days")
+    with open('output', 'a') as f:
+                # Execute the command and redirect the output to the file
+        subprocess.call(['echo', f"{symbol}: {date.strftime('%Y-%m-%d')},{s_date.strftime('%Y-%m-%d')}, {str(round(p_l,2))}%,", str(period.days),"days"], stdout=f)
 
 if(stock_count > 0):
     # Calculate the total profit/loss
     total_profit_loss = sum(p_l for _, _, _, p_l, period in profit_loss)/stock_count
     print(f"\nTotal completed profit/loss: {round(total_profit_loss,2)}%\n")
+    with open('output', 'a') as f:
+                # Execute the command and redirect the output to the file
+        subprocess.call(['echo',f"\nTotal completed profit/loss: {str(round(total_profit_loss,2))}%\n"], stdout=f)
     average_period = sum(period.days for _, _, _, p_l, period in profit_loss)/stock_count
+    with open('output', 'a') as f:
+                # Execute the command and redirect the output to the file
+        subprocess.call(['echo',f"Average period taken : {str(round(average_period,0))} days\n"], stdout=f)
+    
     print(f"Average period taken : {round(average_period,0)} days\n")
 else:
     print("No stocks sold..")
+    with open('output', 'a') as f:
+                # Execute the command and redirect the output to the file
+        subprocess.call(['echo',"No stocks sold.."], stdout=f)
 
 #print(total_profit_loss,stock_count)
 
