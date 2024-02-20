@@ -47,6 +47,7 @@ symbolselllist={}
 symbolongoinglist=[]
 skipflag = False
 pl_percent = 0
+#sellflag = False
 
 for index, row in final_df.iterrows():
     if(pl_avg<=-4):
@@ -86,6 +87,7 @@ for index, row in final_df.iterrows():
             pl_percent = round(((( stop_loss_price - purchase_price)/stop_loss_price)*100),1)
             #if ((r['CLOSE'] <= stop_loss_price) and (pl_percent > 0)): #or (r['CLOSE'] < rprev)
             if((r['DATE'] > purchase_date + pd.Timedelta(days=365)) and ((pl_percent > 0) and (r['CLOSE'] > stop_loss_price))):
+                sellflag = False
                 pl_percent = round(((( stop_loss_price - purchase_price)/stop_loss_price)*100),1)
                 sell_date = pd.to_datetime(r['DATE'])  # Convert to datetime here
                 profit_loss.append((symbol, purchase_date, sell_date, pl_percent, sell_date - purchase_date ))
@@ -105,6 +107,9 @@ for index, row in final_df.iterrows():
                 break
             else:
             #elif((r['CLOSE'] > stop_loss_price) or (pl_percent < 0)):
+                 #if((pl_percent < 10) and (r['DATE'] > purchase_date + pd.Timedelta(days=180))):
+                 #    stop_loss_price = round_to_nearest_05(round(r['CLOSE'] * 0.98,2))
+                  #   sellflag = True
                  if(pl_percent >= 20):
                      stop_loss_price = round_to_nearest_05(round(r['CLOSE'] * 0.98,2))
                  else:
