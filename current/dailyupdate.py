@@ -12,20 +12,19 @@ import pandas as pd
 #q1 = n.stock_quote("HDFCBANK")
 #print(q['priceInfo'])
 
-#symbols = ["HDFCBANK", "RELIANCE", "ICICIBANK","INFY", "LT", "ITC", "TCS", "AXISBANK", "BHARTIARTL", "KOTAKBANK"]
+#symbols = ["LLOYDSME", "ANGELONE"]
 
 # Read the CSV file
-df = pd.read_csv('ind_nifty50list.csv')
+df = pd.read_csv('ind_nifty100list.csv')
 
 # Extract the 'Symbol' column into a list
 symbols = df['Symbol'].tolist()
-
 # Now 'symbols' is a list containing all the symbols
 
 
 for symbol in symbols:
     try:
-        df = stock_csv(symbol=symbol, from_date=date(2021,1,30),
+        df = stock_csv(symbol=symbol, from_date=date(2021,1,1),
                 to_date=date(2024,2,17), series="EQ")
         print(df)
     except Exception as e :

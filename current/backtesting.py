@@ -39,22 +39,33 @@ pl_avg = 0
 stock_count = 0
 max_days = 700
 rprev = 0
-symbollist=[]
+symbolselllist={}
+symbolongoinglist=[]
+skipflag = False
 pl_percent = 0
 
 for index, row in final_df.iterrows():
     if(pl_avg<=-4):
         break
     symbol = row['SYMBOL']
-    if(symbol not in symbollist):
-        symbollist.append(symbol)
+    skipflag = False
+    if(symbol not in symbolongoinglist):
+        symbolongoinglist.append(symbol)
     else:
-        print("Warning!! duplicate symbol skipped",symbol)
+        print("Skipping symbol due to being present in ongoing..",symbol)
         continue
     stock_count = stock_count + 1
     purchase_date = pd.to_datetime(row['DATE'])  # Convert to datetime here
+    if(symbol in symbolselllist.keys()):
+        for date in symbolselllist[symbol]:
+            if(purchase_date < date):
+                skipflag = True
+                break
+    if(skipflag):
+        print("Skipping symbol as it has been purchased already..",symbol,purchase_date)
+        continue
     purchase_price = row['CLOSE']
-    stop_loss_price = round_to_nearest_05(round(purchase_price * 0.98,2))
+    stop_loss_price = round_to_nearest_05(round(purchase_price * 0.95,2))
 
     # Get the data for the next weeks
     next_week_data = historical_data[(historical_data['SYMBOL'] == symbol) & 
@@ -67,22 +78,31 @@ for index, row in final_df.iterrows():
         for i, r in next_week_data.iterrows():
             #print(r['SYMBOL'], r["DATE"])
             pl_percent = round(((( stop_loss_price - purchase_price)/stop_loss_price)*100),1)
-            if ((r['CLOSE'] <= stop_loss_price) and (pl_percent > 0)): #or (r['CLOSE'] < rprev)
+            #if ((r['CLOSE'] <= stop_loss_price) and (pl_percent > 0)): #or (r['CLOSE'] < rprev)
+            if((r['DATE'] > purchase_date + pd.Timedelta(days=365)) and ((pl_percent > 0) and (r['CLOSE'] > stop_loss_price))):
                 pl_percent = round(((( stop_loss_price - purchase_price)/stop_loss_price)*100),1)
                 sell_date = pd.to_datetime(r['DATE'])  # Convert to datetime here
                 profit_loss.append((symbol, purchase_date, sell_date, pl_percent, sell_date - purchase_date ))
+                if(symbol in symbolselllist.keys()):
+                    symbolselllist[symbol].append(sell_date)
+                else :
+                    symbolselllist[symbol] = [sell_date]
+                symbolongoinglist.remove(symbol)
                 print(symbol, purchase_date.strftime('%Y-%m-%d'), sell_date.strftime('%Y-%m-%d'), pl_percent,"stop loss trigger")
                 pl_total = pl_total + pl_percent
                 pl_avg = pl_total/stock_count
                #symbollist.remove(symbol)
                 break
             elif((r['CLOSE'] > stop_loss_price) or (pl_percent < 0)):
-                 stop_loss_price = round_to_nearest_05(round(r['CLOSE'] * 0.98,2))
+                 if(pl_percent >= 5):
+                     stop_loss_price = round_to_nearest_05(round(r['CLOSE'] * 0.99,2))
+                 else:
+                    stop_loss_price = round_to_nearest_05(round(r['CLOSE'] * 0.95,2))
                  pl_percent = round(((( stop_loss_price - purchase_price)/stop_loss_price)*100),1)
                  print(symbol, purchase_date.strftime('%Y-%m-%d'), r['DATE'].strftime('%Y-%m-%d'), stop_loss_price, pl_percent,"trailing stop loss")
                  ongoing.append((symbol, purchase_date.strftime('%Y-%m-%d'), r['DATE'].strftime('%Y-%m-%d'), stop_loss_price, pl_percent,"trailing stop loss"))
-                 pl_percent = round(((( r['CLOSE'] - purchase_price)/r['CLOSE'])*100),1)
-                 if((pl_percent >= 1) and (r['DATE'] > purchase_date + pd.Timedelta(days=60))): #or (pl_percent > -5 and pl_percent < -1) and (r['DATE'] > purchase_date + pd.Timedelta(days=30)))
+                 #pl_percent = round(((( r['CLOSE'] - purchase_price)/r['CLOSE'])*100),1)
+                 """ if((pl_percent >= 1) and (r['DATE'] > purchase_date + pd.Timedelta(days=60))): #or (pl_percent > -5 and pl_percent < -1) and (r['DATE'] > purchase_date + pd.Timedelta(days=30)))
                      #if(r['DATE'] > purchase_date + pd.Timedelta(days=7)):
                     pl_percent = round(((( r['CLOSE'] - purchase_price)/r['CLOSE'])*100),1)
                     sell_date = pd.to_datetime(r['DATE'])  # Convert to datetime here
@@ -92,7 +112,7 @@ for index, row in final_df.iterrows():
                     pl_total = pl_total + pl_percent
                     pl_avg = pl_total/stock_count
                     #symbollist.remove(symbol)
-                    break
+                    break """
                 #print(symbol,r['CLOSE'],stop_loss_price,purchase_price)
             else:
                 print("Data not sufficient.. wait for the next data refresh..")
