@@ -37,7 +37,7 @@ ongoing = []
 pl_total = 0
 pl_avg = 0
 stock_count = 0
-max_days = 700
+max_days = 365
 rprev = 0
 symbolselllist={}
 symbolongoinglist=[]
@@ -54,7 +54,6 @@ for index, row in final_df.iterrows():
     else:
         print("Skipping symbol due to being present in ongoing..",symbol)
         continue
-    stock_count = stock_count + 1
     purchase_date = pd.to_datetime(row['DATE'])  # Convert to datetime here
     if(symbol in symbolselllist.keys()):
         for date in symbolselllist[symbol]:
@@ -89,11 +88,13 @@ for index, row in final_df.iterrows():
                     symbolselllist[symbol] = [sell_date]
                 symbolongoinglist.remove(symbol)
                 print(symbol, purchase_date.strftime('%Y-%m-%d'), sell_date.strftime('%Y-%m-%d'), pl_percent,"stop loss trigger")
+                stock_count = stock_count + 1
                 pl_total = pl_total + pl_percent
                 pl_avg = pl_total/stock_count
                #symbollist.remove(symbol)
                 break
-            elif((r['CLOSE'] > stop_loss_price) or (pl_percent < 0)):
+            else:
+            #elif((r['CLOSE'] > stop_loss_price) or (pl_percent < 0)):
                  if(pl_percent >= 5):
                      stop_loss_price = round_to_nearest_05(round(r['CLOSE'] * 0.99,2))
                  else:
@@ -114,16 +115,16 @@ for index, row in final_df.iterrows():
                     #symbollist.remove(symbol)
                     break """
                 #print(symbol,r['CLOSE'],stop_loss_price,purchase_price)
-            else:
-                print("Data not sufficient.. wait for the next data refresh..")
-                """                 
-                pl_percent = round((((next_week_data.iloc[-1]['CLOSE']) - purchase_price) /next_week_data.iloc[-1]['CLOSE'])*100,1)
-                sell_date = pd.to_datetime(next_week_data.iloc[-1]['DATE'])  # Convert to datetime here
-                # If the closing price never falls below the stop loss price, sell at the closing price on the last day
-                profit_loss.append((symbol, purchase_date, sell_date, pl_percent))
-                pl_total = pl_total + pl_percent
-                pl_avg = pl_total/stock_count 
-                """
+            #else:
+            #    print("Data not sufficient.. wait for the next data refresh..")
+            """                 
+            pl_percent = round((((next_week_data.iloc[-1]['CLOSE']) - purchase_price) /next_week_data.iloc[-1]['CLOSE'])*100,1)
+            sell_date = pd.to_datetime(next_week_data.iloc[-1]['DATE'])  # Convert to datetime here
+            # If the closing price never falls below the stop loss price, sell at the closing price on the last day
+            profit_loss.append((symbol, purchase_date, sell_date, pl_percent))
+            pl_total = pl_total + pl_percent
+            pl_avg = pl_total/stock_count 
+            """
         rprev = r['CLOSE']
     else:
         print(f"No historical data for {symbol} for the week following {purchase_date}")
@@ -151,11 +152,14 @@ profit_loss.sort(key=lambda x: x[1])
 for symbol, date, s_date, p_l, period in profit_loss:
     print(f"{symbol}: {date.strftime('%Y-%m-%d')},{s_date.strftime('%Y-%m-%d')}, {round(p_l,2)}%,", period.days,"days")
 
-# Calculate the total profit/loss
-total_profit_loss = sum(p_l for _, _, _, p_l, period in profit_loss)/stock_count
-print(f"\nTotal completed profit/loss: {round(total_profit_loss,2)}%\n")
-average_period = sum(period.days for _, _, _, p_l, period in profit_loss)/stock_count
-print(f"Average period taken : {round(average_period,0)} days\n")
+if(stock_count > 0):
+    # Calculate the total profit/loss
+    total_profit_loss = sum(p_l for _, _, _, p_l, period in profit_loss)/stock_count
+    print(f"\nTotal completed profit/loss: {round(total_profit_loss,2)}%\n")
+    average_period = sum(period.days for _, _, _, p_l, period in profit_loss)/stock_count
+    print(f"Average period taken : {round(average_period,0)} days\n")
+else:
+    print("No stocks sold..")
 
 #print(total_profit_loss,stock_count)
 

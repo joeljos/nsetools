@@ -13,7 +13,7 @@ files = glob.glob('*EQ.csv')
 uptrend_data = []
 
 # Please replace 'YYYY-MM-DD' with the current date in the same format
-current_date = '2023-1-1'
+current_date = '2023-2-20'
 lookback = 120
 
 def get_roe(ticker):
@@ -60,6 +60,7 @@ def calculate_uptrend(df):
         (df['%D'] < 25) &
        (df['CLOSE'] > df['PREV. CLOSE']) &
         (df['CLOSE'] > df['VWAP']) &
+        (df['LTP'] > df['CLOSE']) &
         (df["ROE%"] > 20)
 ]
     return df_uptrend
